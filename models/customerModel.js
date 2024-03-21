@@ -10,7 +10,7 @@ const customerSchema = new mongoose.Schema({
     unique: true,
   },
   phoneNumber: {
-    type: Number,
+    type: String,
     required: true,
   },
   city: String,
@@ -23,18 +23,4 @@ const customerSchema = new mongoose.Schema({
 
 const Customer = mongoose.model("Customer", customerSchema);
 
-const customerTest = new Customer({
-  name: "Hafied2z",
-  email: "testing112@gmail.com",
-  phoneNumber: 12223344,
-});
-
-// customerTest
-//   .save()
-//   .then((res) => {
-//     console.log(res);
-//   })
-//   .catch((err) => {
-//     console.error(`Data Gagal Disimpan`);
-//     console.log(err);
-//   });
+module.exports = Customer;

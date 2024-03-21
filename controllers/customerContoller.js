@@ -1,90 +1,105 @@
-const fs = require('fs');
+const Customer = require("../models/customerModel");
 
-const customers = JSON.parse(fs.readFileSync(`${__dirname}/../data/data.json`, 'utf-8'));
+const getCustomers = async (req, res) => {
+  try {
+    const customers = await Customer.find();
 
-const getCustomers = (req, res, next) => {
     res.status(200).json({
-        status: 'success',
-        requestAt: req.requestTime,
-        totalData: customers.length,
-        data: {
-            customers,
-        },
+      status: "success",
+      requestAt: req.requestTime,
+      totalData: customers.length,
+      data: {
+        customers,
+      },
     });
-}
+  } catch (error) {
+    res.status(404).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
 
-const getCustomer = (req, res, next) => {
+const getCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const customer = await Customer.findById(id);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        customer,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
+const updateCustomer = async (req, res) => {
+  try {
     const { id } = req.params;
 
-    const customer = customers.find((cust) => cust._id === id);
+    const customer = await Customer.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     res.status(200).json({
-        status: 'success',
-        data: {
-            customer,
-        },
+      status: "success",
+      message: "berhasil update data",
+      data: {
+        customer,
+      },
     });
-}
-
-const updateCustomer = (req, res, next) => {
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+ 
+const deleteCustomer = async (req, res) => {
+  try {
     const id = req.params.id;
-    const customer = customers.find(cust => cust._id === id);
-    const customerIndex = customers.findIndex(cust => cust._id === id);
-
-    customers[customerIndex] = { ...customers[customerIndex], ...req.body }
-
-    if (!customer) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'id customer tidak ditemukan'
-        })
-    }
-
-    fs.writeFile(`${__dirname}/data/data.json`, JSON.stringify(customers), (err) => {
-        res.status(200).json({
-            status: 'success',
-            message: 'Berhasil update data',
-            data: {
-                customer: customers[customerIndex], customer
-            }
-        })
-    })
-}
-
-const deleteCustomer = (req, res) => {
-    const id = req.params.id
-    const customer = customers.find(cust => cust._id === id);
-    const customerIndex = customers.findIndex(cust => cust._id === id)
-
-    if (!customer) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'id customer tidak ditemukan'
-        })
-    }
-
-    customers.splice(customerIndex, 1)
-
-    fs.writeFile(`${__dirname}/data/data.json`, JSON.stringify(customers), (err) => {
-        res.status(200).json({
-            status: 'success',
-            message: 'Berhasil delete data',
-        })
-    })
-}
-
-const createCustomer = (req, res) => {
-    const newCustomer = req.body;
-
-    customers.push(req.body);
-    fs.writeFile(`${__dirname}/data/data.json`, JSON.stringify(customers), (err) => {
-        res.status(201).json({
-            status: 'success',
-            data: {
-                customer: newCustomer
-            }
-        })
+    const customer = await Customer.findByIdAndDelete(id);
+    res.status(204).json({
+      status: "success",
+      message: "Delete data success!",
     });
-}
+  } catch (error) {
+    res.status(400).json({
+      status: "failed",
+      message: error.message,
+    });
+  }
+};
 
-module.exports =  { createCustomer, getCustomer, getCustomers, deleteCustomer, updateCustomer }
+const createCustomer = async (req, res) => {
+  try {
+    const newCustomer = await Customer.create(req.body);
+    res.status(201).json({
+      status: "success",
+      data: {
+        customer: newCustomer,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createCustomer,
+  getCustomer,
+  getCustomers,
+  deleteCustomer,
+  updateCustomer,
+};
